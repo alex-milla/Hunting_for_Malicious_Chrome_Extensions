@@ -14,7 +14,8 @@ To hunt for potential malicious extensions, I based my work on the KQL query by 
 
 ## Contents
 
-- **KQL Queries**: Detection of malicious extensions in Microsoft Defender and Sentinel
+- **KQL Queries**: 
+  - [Microsoft_Sentinel_Load_malicious_extensions_from_Watchlist.kql](https://github.com/alex-milla/Hunting_for_Malicious_Chrome_Extensions/blob/main/Microsoft_Sentinel_Load_malicious_extensions_from_Watchlist.kql) - Detection query using Watchlist
 - **Watchlists**: IOC lists and known malicious extensions
 - **Playbooks/Logic Apps**: Automated response to detections
 - **Documentation**: Use cases and implementation guides
