@@ -1,4 +1,5 @@
 # Hunting for Malicious Chrome Extensions
+**Update**: 2026-02-16
 
 I've been wanting to write about this topic for a while because, let's be honest, browser extensions are that blind spot we all have. You know: users install anything that promises to "make their work easier" or give them some advantage while browsing, and at least if you give users that much freedom, you need to be alert about who needs a reality check.
 
