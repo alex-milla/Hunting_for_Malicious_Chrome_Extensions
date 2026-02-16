@@ -23,6 +23,6 @@ To hunt for potential malicious extensions, I based my work on the KQL query by 
 
 ---
 
-📝 **Full article (ESP)**: https://www.alexmilla.net/a-la-caza-de-extensiones-maliciosas-en-microsoft-sentinel/
+📝 Full article (ESP): https://www.alexmilla.net/a-la-caza-de-extensiones-maliciosas-en-microsoft-sentinel/
 
 
