@@ -1,0 +1,29 @@
+# Dependencies
+node_modules/
+vendor/
+
+# Configuration
+config.php
+cache/
+
+# Environment
+.env
+.env.local
+.env.*.local
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+
+# Local overrides
+!*.sample.php

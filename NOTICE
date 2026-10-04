@@ -1,0 +1,47 @@
+Chrome Extension Validator
+====================================
+
+This project includes contributions from:
+
+- Alex Milla (Original author and maintainer)
+- Based on PowerShell scripts for validating malicious Chrome extensions
+
+The project uses the following open source components:
+
+- Chrome Web Store API for extension information
+- GitHub API for blocklist synchronization
+
+All third-party dependencies and their respective licenses are listed
+in their respective directories or source files.
+
+Project Homepage:
+https://github.com/alex-milla/Chrome-Extension-Validator
+
+This project is licensed under the Apache License, Version 2.0.
+All derivative works must retain this NOTICE file and mention the
+original project.
+
+---
+
+Chrome Extension Validator
+====================================
+
+Este proyecto incluye contribuciones de:
+
+- Alex Milla (Autor original y mantenedor)
+- Basado en scripts PowerShell para validar extensiones de Chrome maliciosas
+
+El proyecto utiliza los siguientes componentes de código abierto:
+
+- API de Chrome Web Store para información de extensiones
+- API de GitHub para sincronización de blocklist
+
+Todas las dependencias de terceros y sus respectivas licencias están
+listadas en sus respectivos directorios o archivos fuentes.
+
+Página del proyecto:
+https://github.com/alex-milla/Chrome-Extension-Validator
+
+Este proyecto está bajo licencia Apache 2.0. Todos los trabajos
+derivados deben conservar este archivo NOTICE y mencionar el
+proyecto original.
