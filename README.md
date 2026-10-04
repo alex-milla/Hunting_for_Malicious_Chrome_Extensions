@@ -1,104 +1,86 @@
-# Chrome Extension Validator (versión hosting compartido: Apache + PHP)
+# Chrome Extension Validator
 
-Aplicación web que sustituye a los scripts PowerShell de validación de
-extensiones de Chrome maliciosas. Extrae IDs de extensiones de un reporte de
-indicadores (incluidos reportes crudos tipo Unit42 con prosa, tablas partidas,
-installs, versiones y dominios C2 defangados), comprueba su estado y nombre
-contra la Chrome Web Store, exporta un CSV listo para watchlists de Microsoft
-Sentinel / Defender y, opcionalmente, sincroniza los hallazgos con un repo de
-GitHub que actúa como blocklist público.
+A web application that replaces PowerShell scripts for validating malicious Chrome extensions. It extracts extension IDs from threat intelligence reports (including raw Unit42-style reports with prose, split tables, installs, versions, and defanged C2 domains), checks their status and names against the Chrome Web Store, exports a CSV ready for Microsoft Sentinel/Defender watchlists, and optionally synchronizes findings with a GitHub repository acting as a public blocklist.
 
-**Sin npm, sin Node, sin compilaciones**: HTML/CSS/JS planos + dos endpoints
-PHP. Pensada para subirse por FTP al hosting compartido.
+**No npm, no Node, no build steps**: Plain HTML/CSS/JS + two PHP endpoints. Designed to be uploaded via FTP to shared hosting.
 
-**Multilingüe**: Disponible en Español e Inglés. El idioma se selecciona automáticamente
-según la preferencia del navegador o puede cambiarse manualmente desde el selector
-en la interfaz.
+**Multilingual**: Available in English and Spanish. Language is automatically detected from browser preferences or can be manually switched from the interface selector.
 
 ```
-Reporte (txt/csv) → extracción regex → api/check.php (Chrome Web Store)
+Report (txt/csv) → regex extraction → api/check.php (Chrome Web Store)
                                     → CSV watchlist
-                                    → api/sync.php → blocklist en GitHub
+                                    → api/sync.php → blocklist on GitHub
 ```
 
-## Requisitos del hosting
+## Requirements
 
-- PHP 7.4 o superior.
-- **cURL, `allow_url_fopen` o `fsockopen`** — con uno de los tres basta.
-  El código prueba en ese orden y usa el primero disponible:
-  - cURL (el habitual en la mayoría de hostings),
-  - `file_get_contents` con `allow_url_fopen`,
-  - `fsockopen` (socket directo; funciona en hostings donde los dos
-    anteriores están desactivados, siempre que exista OpenSSL para HTTPS).
+- PHP 7.4 or higher
+- **cURL, `allow_url_fopen`, or `fsockopen`** — only one of these is needed.
+  The code tests them in this order and uses the first available:
+  - cURL (most common on shared hosting)
+  - `file_get_contents` with `allow_url_fopen`
+  - `fsockopen` (direct socket; works on hostings where the above are disabled, as long as OpenSSL is available for HTTPS)
 
-Sube `test-servidor.php` al hosting y ábrelo en el navegador para confirmarlo.
-Te dirá en verde/rojo si el servidor vale y **qué método está usando
-realmente**. **Bórralo después.**
+Upload `test-servidor.php` to your hosting and open it in the browser to verify everything is working. It will show green/red status for each requirement and **which method is actually being used**. **Delete this file after testing.**
 
-## Instalación
+## Installation
 
-1. Sube por FTP (o el administrador de archivos del hosting) el contenido de
-   esta carpeta (`public_html/`, `htdocs/`, `www/`... como lo llame tu
-   proveedor).
-2. Renombra `config.sample.php` → **`config.php`** y ajusta los valores.
-   - Solo `ADMIN_TOKEN` y `CACHE_*` hacen falta para el validador.
-   - `GH_TOKEN` / `GH_REPO` solo para la sincronización con GitHub (opcional).
-3. Comprueba que la carpeta `cache/` tiene permisos de escritura
-   (755 o 775; el hosting suele darlos por defecto).
-4. Abre tu dominio. Fin.
+1. Upload the contents of this folder (`public_html/`, `htdocs/`, `www/` - depending on your hosting provider) via FTP or your hosting file manager.
+2. Rename `config.sample.php` → **`config.php`** and adjust the values.
+   - Only `ADMIN_TOKEN` and `CACHE_*` are required for the validator to work.
+   - `GH_TOKEN` / `GH_REPO` are only needed for GitHub synchronization (optional).
+3. Ensure the `cache/` folder has write permissions (755 or 775; most hostings grant these by default).
+4. Access your domain. That's it!
 
-El `.htaccess` incluido bloquea el acceso web directo a `config.php` y a la
-carpeta `cache/`, y desactiva el listado de directorios.
+The included `.htaccess` file blocks direct web access to `config.php` and the `cache/` folder, and disables directory listing.
 
-## Estructura
+## Project Structure
 
 ```
-├── index.html               Interfaz (4 pasos) - multilingüe
+.
+├── index.html                    Multilingual interface (4 steps)
 ├── assets/
-│   ├── app.js               Lógica: extracción, cola, export, sync + i18n
-│   └── style.css            Tema claro/oscuro (acento naranja #f97316)
+│   ├── app.js                    Logic: extraction, queue, export, sync + i18n
+│   └── style.css                 Light/dark theme (orange accent #f97316)
 ├── api/
-│   ├── _http.php            Helper HTTP: cURL → allow_url_fopen → fsockopen
-│   ├── check.php            GET ?id=<ID> → consulta la Web Store (con caché 6 h)
-│   └── sync.php             POST (cabecera x-admin-token) → commit blocklist en GitHub
-├── locales/                 Archivos de traducción
-│   ├── es.json               Traducciones en Español
-│   └── en.json               Traducciones en Inglés
-├── cache/                   Caché de comprobaciones (bloqueada por .htaccess)
-├── config.sample.php        Plantilla de configuración
-├── test-servidor.php        Diagnóstico (subir, probar y borrar)
-├── test-sync.php            Diagnóstico de sincronización GitHub
-├── test-sync-real.php       Prueba real de sincronización
-├── .htaccess                Configuración Apache (bloquea config.php, cache/, locales/)
-├── LICENSE                  Apache-2.0
-├── NOTICE                   Atribución al proyecto original
+│   ├── _http.php                 HTTP helper: cURL → allow_url_fopen → fsockopen
+│   ├── check.php                 GET ?id=<ID> → queries Web Store (6h cache)
+│   └── sync.php                  POST (x-admin-token header) → commits to GitHub blocklist
+├── locales/                      Translation files
+│   ├── en.json                   English translations
+│   └── es.json                   Spanish translations
+├── cache/                        Check cache (blocked by .htaccess)
+├── config.sample.php             Configuration template
+├── test-servidor.php             Server diagnostic (upload, test, delete)
+├── test-sync.php                 GitHub sync diagnostic
+├── test-sync-real.php            Real sync test
+├── .htaccess                     Apache configuration (blocks config.php, cache/, locales/)
+├── LICENSE                       Apache-2.0
+└── NOTICE                        Original project attribution
 ```
 
-## Configuración de la sincronización con GitHub (opcional)
+## GitHub Synchronization Setup (Optional)
 
-1. Crea un repo público vacío para el blocklist.
-2. Crea un token de grano fino en GitHub → Settings → Developer settings →
-   Fine-grained tokens, con permiso **Contents: Read and write** SOLO sobre
-   ese repo.
-3. Rellena `GH_TOKEN`, `GH_REPO` y `GH_BRANCH` en `config.php`.
-4. En la web, sección "4 · Blocklist en GitHub", introduce el `ADMIN_TOKEN`
-   y pulsa Sincronizar.
+To enable blocklist synchronization with GitHub:
 
-Tras cada sync el repo contiene:
+1. Create an empty public repository for the blocklist (e.g., `Hunting_for_Malicious_Chrome_Extensions`)
+2. Create a fine-grained Personal Access Token (PAT) at GitHub → Settings → Developer settings → Fine-grained tokens, with **Contents: Read and write** permission **ONLY** for that repository.
+3. Fill in `GH_TOKEN`, `GH_REPO`, and `GH_BRANCH` in `config.php`.
+4. In the web interface, section "4 · Blocklist on GitHub", enter your `ADMIN_TOKEN` and click Sync.
 
-- `blocklist.csv` — `"ExtensionID","ExtensionName","Status","ChromeStoreURL"`
-  (mismo formato que los CSV de PowerShell; BOM UTF-8 y CRLF).
-- `blocklist.txt` — un ID por línea.
+After each synchronization, the repository contains:
 
-Consumibles públicamente en
-`https://raw.githubusercontent.com/<usuario>/<repo>/<rama>/blocklist.csv`.
+- `blocklist.csv` — `"ExtensionID","ExtensionName","Status","ChromeStoreURL"` (same format as PowerShell CSV exports; UTF-8 BOM with CRLF)
+- `blocklist.txt` — one ID per line
 
-## Integración con Microsoft Sentinel / Defender
+These files are publicly consumable at:
+`https://raw.githubusercontent.com/<user>/<repo>/<branch>/blocklist.csv`
 
-1. Exporta el CSV desde la web (o consume el `blocklist.csv` del repo).
-2. Sentinel → Watchlists → New → sube el CSV → **SearchKey = `ExtensionID`**.
-3. Caza en Defender para Endpoint (las extensiones viven en
-   `%LOCALAPPDATA%\Google\Chrome\User Data\<perfil>\Extensions\<id>`):
+## Microsoft Sentinel / Defender Integration
+
+1. Export the CSV from the web interface (or consume `blocklist.csv` from the repo)
+2. In Sentinel: Watchlists → New → upload the CSV → **SearchKey = `ExtensionID`**
+3. Hunt in Defender for Endpoint (extensions are located at `%LOCALAPPDATA%\Google\Chrome\User Data\<profile>\Extensions\<id>`):
 
 ```kusto
 let ext_ids = _GetWatchlist('chrome-malicious-extensions')
@@ -108,49 +90,52 @@ DeviceFileEvents
 | summarize Count = count() by DeviceId, FolderPath
 ```
 
-## Extracción de IDs
+## ID Extraction
 
-Los IDs de extensión de Chromium son **32 caracteres, solo letras `a-p`**
-(codificación hexadecimal con el alfabeto desplazado). La web usa el patrón
-`\b[a-p]{32}\b` con dedupe y orden alfabético — idéntico a
-`extraer_indicadores.ps1` — que detecta los IDs en cualquier formato de
-reporte sin falsos positivos con dominios, installs ni versiones.
+Chrome extension IDs are **32 characters, using only letters a-p** (hexadecimal encoding with shifted alphabet). The web uses the pattern `\b[a-p]{32}\b` with deduplication and alphabetical sorting — identical to `extraer_indicadores.ps1` — which detects IDs in any report format without false positives from domains, installs, or versions.
 
-## Soporte Multilingüe
+## Multilingual Support
 
-La aplicación soporta **Español** e **Inglés** automáticamente:
+The application supports **English** and **Spanish** automatically:
 
-- **Detección automática**: Usa el idioma del navegador (`navigator.language`)
-- **Selector manual**: Dropdown en la barra superior para cambiar entre ES/EN
-- **Persistencia**: La selección se guarda en `localStorage`
+- **Auto-detection**: Uses browser language (`navigator.language`)
+- **Manual selector**: Dropdown in the top bar to switch between EN/ES
+- **Persistence**: Selection is saved in `localStorage`
 
-### Idiomas soportados
-| Código | Idioma | Archivo |
-|--------|--------|---------|
-| es | Español | `locales/es.json` |
+### Supported Languages
+
+| Code | Language | File |
+|------|----------|------|
 | en | English | `locales/en.json` |
+| es | Spanish | `locales/es.json` |
 
-### Añadir nuevos idiomas
-1. Crea un nuevo archivo en `locales/` (ej: `fr.json`)
-2. Copia la estructura de `en.json`
-3. Traduce todos los valores
-4. Añade la opción al selector en `index.html`
-5. Actualiza `changeLanguage()` en `app.js` para manejar el nuevo idioma
+### Adding New Languages
 
-Los IDs de traducción siguen el patrón de claves simples (ej: `step1_title`, `btn_extract`, etc.)
+1. Create a new file in `locales/` (e.g., `fr.json`)
+2. Copy the structure from `en.json`
+3. Translate all values
+4. Add the option to the language selector in `index.html`
+5. Update `changeLanguage()` in `app.js` to handle the new language
 
-## Límites y notas
+Translation keys follow a simple pattern (e.g., `step1_title`, `btn_extract`, etc.)
 
-- Concurrencia de comprobación: 3 peticiones con 400 ms de espera entre cada
-  una (equivale al rate limiting de 500 ms de los PowerShell). Los resultados
-  Active/Removed se cachean 6 h en el servidor para no repetir consultas.
-- En hostings compartidos, el tiempo máximo de ejecución de PHP
-  (`max_execution_time`) no afecta: cada comprobación es una petición corta e
-  independiente.
-- Si dos sincronizaciones coinciden, la segunda devuelve un error de sha;
-  basta con reintentarla.
+## Rate Limits and Notes
 
-## Licencia
+- Check concurrency: 3 requests with 400ms delay between each (equivalent to 500ms rate limiting from PowerShell scripts). Active/Removed results are cached for 6 hours on the server to avoid repeated queries.
+- On shared hosting, PHP's `max_execution_time` doesn't affect this: each check is a short, independent request.
+- If two synchronizations coincide, the second will return a sha error; simply retry.
 
-Apache-2.0 (`LICENSE`). Los trabajos derivados deben conservar el archivo
-`NOTICE` y mencionar este proyecto original.
+## License
+
+Apache-2.0 (`LICENSE`). Derivative works must retain the `NOTICE` file and mention this original project.
+
+## Security Notes
+
+- **Never commit `config.php`** to version control (it's in `.gitignore`)
+- The `.htaccess` blocks web access to sensitive files
+- All diagnostic test files can be safely uploaded (they contain no private data)
+- The `cache/` directory only contains extension check results, not sensitive information
+
+---
+
+**📘 Spanish Documentation:** See [README_es.md](README_es.md)
