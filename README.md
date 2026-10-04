@@ -11,6 +11,10 @@ GitHub que actúa como blocklist público.
 **Sin npm, sin Node, sin compilaciones**: HTML/CSS/JS planos + dos endpoints
 PHP. Pensada para subirse por FTP al hosting compartido.
 
+**Multilingüe**: Disponible en Español e Inglés. El idioma se selecciona automáticamente
+según la preferencia del navegador o puede cambiarse manualmente desde el selector
+en la interfaz.
+
 ```
 Reporte (txt/csv) → extracción regex → api/check.php (Chrome Web Store)
                                     → CSV watchlist
@@ -49,19 +53,25 @@ carpeta `cache/`, y desactiva el listado de directorios.
 ## Estructura
 
 ```
-├── index.html               Interfaz (4 pasos)
+├── index.html               Interfaz (4 pasos) - multilingüe
 ├── assets/
-│   ├── app.js               Lógica: extracción, cola, export, sync
+│   ├── app.js               Lógica: extracción, cola, export, sync + i18n
 │   └── style.css            Tema claro/oscuro (acento naranja #f97316)
 ├── api/
 │   ├── _http.php            Helper HTTP: cURL → allow_url_fopen → fsockopen
 │   ├── check.php            GET ?id=<ID> → consulta la Web Store (con caché 6 h)
 │   └── sync.php             POST (cabecera x-admin-token) → commit blocklist en GitHub
+├── locales/                 Archivos de traducción
+│   ├── es.json               Traducciones en Español
+│   └── en.json               Traducciones en Inglés
 ├── cache/                   Caché de comprobaciones (bloqueada por .htaccess)
 ├── config.sample.php        Plantilla de configuración
 ├── test-servidor.php        Diagnóstico (subir, probar y borrar)
-├── .htaccess
-├── LICENSE / NOTICE         Apache-2.0 (menciona el proyecto original)
+├── test-sync.php            Diagnóstico de sincronización GitHub
+├── test-sync-real.php       Prueba real de sincronización
+├── .htaccess                Configuración Apache (bloquea config.php, cache/, locales/)
+├── LICENSE                  Apache-2.0
+├── NOTICE                   Atribución al proyecto original
 ```
 
 ## Configuración de la sincronización con GitHub (opcional)
@@ -105,6 +115,29 @@ Los IDs de extensión de Chromium son **32 caracteres, solo letras `a-p`**
 `\b[a-p]{32}\b` con dedupe y orden alfabético — idéntico a
 `extraer_indicadores.ps1` — que detecta los IDs en cualquier formato de
 reporte sin falsos positivos con dominios, installs ni versiones.
+
+## Soporte Multilingüe
+
+La aplicación soporta **Español** e **Inglés** automáticamente:
+
+- **Detección automática**: Usa el idioma del navegador (`navigator.language`)
+- **Selector manual**: Dropdown en la barra superior para cambiar entre ES/EN
+- **Persistencia**: La selección se guarda en `localStorage`
+
+### Idiomas soportados
+| Código | Idioma | Archivo |
+|--------|--------|---------|
+| es | Español | `locales/es.json` |
+| en | English | `locales/en.json` |
+
+### Añadir nuevos idiomas
+1. Crea un nuevo archivo en `locales/` (ej: `fr.json`)
+2. Copia la estructura de `en.json`
+3. Traduce todos los valores
+4. Añade la opción al selector en `index.html`
+5. Actualiza `changeLanguage()` en `app.js` para manejar el nuevo idioma
+
+Los IDs de traducción siguen el patrón de claves simples (ej: `step1_title`, `btn_extract`, etc.)
 
 ## Límites y notas
 
