@@ -1,0 +1,35 @@
+// Load malicious extensions from Watchlist
+let MaliciousExtensions = _GetWatchlist('MaliciousExtensions')
+    | project ExtensionID = tostring(column_ifexists("ExtensionID", "")), 
+              ExtensionName = tostring(column_ifexists("ExtensionName", "")), 
+              Description = tostring(column_ifexists("Description", "")), 
+              Source = tostring(column_ifexists("Source", ""));
+let MaliciousIDs = toscalar(MaliciousExtensions | summarize make_set(ExtensionID));
+DeviceFileEvents
+| where TimeGenerated > ago(30d)
+| where ActionType == "FileCreated"
+| where FileName endswith ".crx"
+| where FolderPath contains "Webstore Downloads"
+// Extract Extension ID from file name
+| extend ExtensionID = trim_end(@"_\d{2,6}.crx", FileName)
+// Early filter using hash set
+| where ExtensionID in (MaliciousIDs)
+// Generate extension URLs
+| extend ExtensionURL = strcat("https://chrome.google.com/webstore/detail/", ExtensionID)
+| extend EdgeExtensionURL = strcat("https://microsoftedge.microsoft.com/addons/detail/", ExtensionID)
+// Aggregate installation information
+| summarize 
+    InstallCount = count(),
+    FirstSeen = min(TimeGenerated),
+    LastSeen = max(TimeGenerated),
+    SHA1List = make_set(SHA1),
+    SHA256List = make_set(SHA256)
+    by InitiatingProcessAccountName, DeviceName, ExtensionID, ExtensionURL, EdgeExtensionURL
+// Join with extension details
+| join kind=inner (MaliciousExtensions) on ExtensionID
+// Project relevant fields
+| project 
+    DeviceName, InitiatingProcessAccountName, ExtensionName, ExtensionID, Description, Source,
+    InstallCount, FirstSeen, LastSeen, ExtensionURL, EdgeExtensionURL, SHA1List, SHA256List
+// Sort by criticality
+| order by InstallCount desc, FirstSeen desc
