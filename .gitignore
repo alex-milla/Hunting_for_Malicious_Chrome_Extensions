@@ -27,3 +27,6 @@ Thumbs.db
 
 # Local overrides
 !*.sample.php
+
+# Setup scripts (Windows)
+*.bat
